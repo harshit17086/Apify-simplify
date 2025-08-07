@@ -12,7 +12,7 @@ interface SchemaProperty {
   type: string;
   title?: string;
   description?: string;
-  default?: any;
+  default?: unknown;
   enum?: string[];
   format?: string;
 }
@@ -28,7 +28,9 @@ export default function ConfigurePage() {
   const [actor, setActor] = useState<Actor | null>(null);
   const [apiKey, setApiKey] = useState("");
   const [inputSchema, setInputSchema] = useState<InputSchema | null>(null);
-  const [inputValues, setInputValues] = useState<Record<string, any>>({});
+  const [inputValues, setInputValues] = useState<
+    Record<string, string | number | boolean | object | undefined>
+  >({});
   const [loading, setLoading] = useState(true);
   const [runLoading, setRunLoading] = useState(false);
   const [error, setError] = useState("");
@@ -63,7 +65,10 @@ export default function ConfigurePage() {
         setInputSchema(data.schema);
 
         // Initialize input values
-        const defaults: Record<string, any> = {};
+        const defaults: Record<
+          string,
+          string | number | boolean | object | undefined
+        > = {};
         if (
           data.schema?.properties &&
           Object.keys(data.schema.properties).length > 0
@@ -87,13 +92,16 @@ export default function ConfigurePage() {
         }
         setInputValues(defaults);
       }
-    } catch (error) {
+    } catch {
       setError("Failed to fetch actor schema");
     }
     setLoading(false);
   };
 
-  const handleInputChange = (key: string, value: any) => {
+  const handleInputChange = (
+    key: string,
+    value: string | number | boolean | object | undefined
+  ) => {
     setInputValues((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -104,35 +112,47 @@ export default function ConfigurePage() {
     setError("");
 
     try {
-      let finalInput = { ...inputValues };
+      let finalInput: Record<
+        string,
+        string | number | boolean | object | undefined
+      > = { ...inputValues };
 
       // Handle special case for actors without schema
       if (
         !inputSchema?.properties ||
         Object.keys(inputSchema.properties).length === 0
       ) {
-        const cleanInput: Record<string, any> = {};
+        const cleanInput: Record<
+          string,
+          string | number | boolean | object | undefined
+        > = {};
 
-        if (inputValues.url) {
+        if (inputValues.url && typeof inputValues.url === "string") {
           cleanInput.url = inputValues.url;
         }
 
-        if (inputValues.startUrls) {
+        if (
+          inputValues.startUrls &&
+          typeof inputValues.startUrls === "string"
+        ) {
           try {
             const parsedStartUrls = JSON.parse(inputValues.startUrls);
             cleanInput.startUrls = parsedStartUrls;
-          } catch (error) {
+          } catch {
             if (inputValues.startUrls.startsWith("http")) {
               cleanInput.startUrls = [{ url: inputValues.startUrls }];
             }
           }
         }
 
-        if (inputValues.additionalInput) {
+        if (
+          inputValues.additionalInput &&
+          typeof inputValues.additionalInput === "string"
+        ) {
           try {
             const additionalData = JSON.parse(inputValues.additionalInput);
             Object.assign(cleanInput, additionalData);
-          } catch (error) {
+          } catch {
             console.warn("Invalid JSON in additional input, skipping");
           }
         }
@@ -159,7 +179,7 @@ export default function ConfigurePage() {
           `/result?results=${resultsParam}&status=${data.status}&runId=${data.runId}`
         );
       }
-    } catch (error) {
+    } catch {
       setError("Failed to run actor");
     }
     setRunLoading(false);
@@ -170,14 +190,14 @@ export default function ConfigurePage() {
   };
 
   const renderInputField = (key: string, property: SchemaProperty) => {
-    const value = inputValues[key] || "";
+    const value = inputValues[key];
 
     switch (property.type) {
       case "string":
         if (property.enum) {
           return (
             <select
-              value={value}
+              value={typeof value === "string" ? value : ""}
               onChange={(e) => handleInputChange(key, e.target.value)}
               className="config-input config-select"
             >
@@ -193,7 +213,7 @@ export default function ConfigurePage() {
         return (
           <input
             type={property.format === "uri" ? "url" : "text"}
-            value={value}
+            value={typeof value === "string" ? value : ""}
             onChange={(e) => handleInputChange(key, e.target.value)}
             className="config-input"
             placeholder={
@@ -206,7 +226,7 @@ export default function ConfigurePage() {
           <label className="checkbox-wrapper">
             <input
               type="checkbox"
-              checked={value}
+              checked={typeof value === "boolean" ? value : false}
               onChange={(e) => handleInputChange(key, e.target.checked)}
               className="config-checkbox"
             />
@@ -218,7 +238,7 @@ export default function ConfigurePage() {
         return (
           <input
             type="number"
-            value={value}
+            value={typeof value === "number" ? value : ""}
             onChange={(e) =>
               handleInputChange(
                 key,
@@ -318,8 +338,8 @@ export default function ConfigurePage() {
             <div className="manual-form">
               <h3 className="form-section-title">Manual Configuration</h3>
               <p className="form-section-description">
-                This actor doesn&apos;t have a defined schema. Please provide the
-                input parameters manually.
+                This actor doesn&apos;t have a defined schema. Please provide
+                the input parameters manually.
               </p>
 
               <div className="input-group">
@@ -331,7 +351,9 @@ export default function ConfigurePage() {
                 </label>
                 <input
                   type="url"
-                  value={inputValues.url || ""}
+                  value={
+                    typeof inputValues.url === "string" ? inputValues.url : ""
+                  }
                   onChange={(e) => handleInputChange("url", e.target.value)}
                   className="config-input"
                   placeholder="https://example.com"
@@ -346,7 +368,11 @@ export default function ConfigurePage() {
                   </span>
                 </label>
                 <textarea
-                  value={inputValues.startUrls || ""}
+                  value={
+                    typeof inputValues.startUrls === "string"
+                      ? inputValues.startUrls
+                      : ""
+                  }
                   onChange={(e) =>
                     handleInputChange("startUrls", e.target.value)
                   }
@@ -363,7 +389,11 @@ export default function ConfigurePage() {
                   </span>
                 </label>
                 <textarea
-                  value={inputValues.additionalInput || ""}
+                  value={
+                    typeof inputValues.additionalInput === "string"
+                      ? inputValues.additionalInput
+                      : ""
+                  }
                   onChange={(e) =>
                     handleInputChange("additionalInput", e.target.value)
                   }
