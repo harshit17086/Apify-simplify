@@ -8,11 +8,20 @@ type Actor = {
   title: string;
 };
 
-type InputSchema = {
+interface SchemaProperty {
+  type: string;
+  title?: string;
+  description?: string;
+  default?: any;
+  enum?: string[];
+  format?: string;
+}
+
+interface InputSchema {
   type: string;
   title: string;
-  properties: Record<string, any>;
-};
+  properties: Record<string, SchemaProperty>;
+}
 
 export default function ConfigurePage() {
   const router = useRouter();
@@ -78,7 +87,7 @@ export default function ConfigurePage() {
         }
         setInputValues(defaults);
       }
-    } catch (e) {
+    } catch (error) {
       setError("Failed to fetch actor schema");
     }
     setLoading(false);
@@ -112,7 +121,7 @@ export default function ConfigurePage() {
           try {
             const parsedStartUrls = JSON.parse(inputValues.startUrls);
             cleanInput.startUrls = parsedStartUrls;
-          } catch (e) {
+          } catch (error) {
             if (inputValues.startUrls.startsWith("http")) {
               cleanInput.startUrls = [{ url: inputValues.startUrls }];
             }
@@ -123,7 +132,7 @@ export default function ConfigurePage() {
           try {
             const additionalData = JSON.parse(inputValues.additionalInput);
             Object.assign(cleanInput, additionalData);
-          } catch (e) {
+          } catch (error) {
             console.warn("Invalid JSON in additional input, skipping");
           }
         }
@@ -150,7 +159,7 @@ export default function ConfigurePage() {
           `/result?results=${resultsParam}&status=${data.status}&runId=${data.runId}`
         );
       }
-    } catch (e) {
+    } catch (error) {
       setError("Failed to run actor");
     }
     setRunLoading(false);
@@ -160,7 +169,7 @@ export default function ConfigurePage() {
     router.push("/dashboard");
   };
 
-  const renderInputField = (key: string, property: any) => {
+  const renderInputField = (key: string, property: SchemaProperty) => {
     const value = inputValues[key] || "";
 
     switch (property.type) {
@@ -309,7 +318,7 @@ export default function ConfigurePage() {
             <div className="manual-form">
               <h3 className="form-section-title">Manual Configuration</h3>
               <p className="form-section-description">
-                This actor doesn't have a defined schema. Please provide the
+                This actor doesn&apos;t have a defined schema. Please provide the
                 input parameters manually.
               </p>
 

@@ -33,7 +33,7 @@ export default function AuthPage() {
         sessionStorage.setItem("apifyApiKey", apiKey);
         router.push("/dashboard");
       }
-    } catch (e) {
+    } catch {
       setError("Network error. Please try again.");
     }
 
@@ -115,7 +115,7 @@ export default function AuthPage() {
             🔒 Your API key is encrypted and never stored permanently
           </p>
           <p className="help-text">
-            Don't have an API key?{" "}
+            Don&apos;t have an API key?{" "}
             <a
               href="https://apify.com"
               target="_blank"

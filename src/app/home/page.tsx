@@ -8,11 +8,20 @@ type Actor = {
   title: string;
 };
 
-type InputSchema = {
+interface SchemaProperty {
+  type: string;
+  title?: string;
+  description?: string;
+  default?: any;
+  enum?: string[];
+  format?: string;
+}
+
+interface InputSchema {
   type: string;
   title: string;
-  properties: Record<string, any>;
-};
+  properties: Record<string, SchemaProperty>;
+}
 
 export default function Home() {
   const router = useRouter();
@@ -51,7 +60,7 @@ export default function Home() {
           setActors([]);
         }
       }
-    } catch (e) {
+    } catch (error) {
       setError("Network error");
     }
     setLoading(false);
@@ -103,7 +112,7 @@ export default function Home() {
         console.log("Initial input values:", defaults);
         setInputValues(defaults);
       }
-    } catch (e) {
+    } catch (error) {
       setError("Failed to fetch actor schema");
     }
     setSchemaLoading(false);
@@ -141,7 +150,7 @@ export default function Home() {
         try {
           const parsedStartUrls = JSON.parse(inputValues.startUrls);
           cleanInput.startUrls = parsedStartUrls;
-        } catch (e) {
+        } catch (error) {
           // If it's not valid JSON, treat it as a single URL
           if (inputValues.startUrls.startsWith("http")) {
             cleanInput.startUrls = [{ url: inputValues.startUrls }];
@@ -154,7 +163,7 @@ export default function Home() {
         try {
           const additionalData = JSON.parse(inputValues.additionalInput);
           Object.assign(cleanInput, additionalData);
-        } catch (e) {
+        } catch (error) {
           console.warn("Invalid JSON in additional input, skipping");
         }
       }
@@ -188,7 +197,7 @@ export default function Home() {
           `/result?results=${resultsParam}&status=${data.status}&runId=${data.runId}`
         );
       }
-    } catch (e) {
+    } catch (error) {
       setError("Failed to run actor");
     }
     setRunLoading(false);
@@ -201,7 +210,7 @@ export default function Home() {
     setError("");
   };
 
-  const renderInputField = (key: string, property: any) => {
+  const renderInputField = (key: string, property: SchemaProperty) => {
     const value = inputValues[key] || "";
 
     switch (property.type) {
@@ -371,7 +380,7 @@ export default function Home() {
                 <>
                   <div className="no-schema-info">
                     <p>
-                      This actor doesn't have a defined input schema. Please
+                      This actor doesn&apos;t have a defined input schema. Please
                       provide the input parameters manually:
                     </p>
                   </div>

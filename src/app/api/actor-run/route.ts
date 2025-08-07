@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
+interface ActorResult {
+  [key: string]: string | number | boolean | object | null | undefined;
+  _itemIndex?: number;
+  _note?: string;
+}
+
+interface TrimmedResult extends ActorResult {
+  _itemIndex: number;
+  _note?: string;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { apiKey, actorId, input } = await req.json();
@@ -81,9 +92,9 @@ export async function POST(req: NextRequest) {
             const results = await resultsResponse.json();
 
             // Trim large content in each result item
-            const trimmedResults = (results || []).map(
-              (item: any, index: number) => {
-                const trimmedItem: any = {};
+            const trimmedResults: TrimmedResult[] = (results || []).map(
+              (item: ActorResult, index: number) => {
+                const trimmedItem: ActorResult = {};
 
                 for (const [key, value] of Object.entries(item)) {
                   if (typeof value === "string") {

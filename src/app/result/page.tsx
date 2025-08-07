@@ -2,8 +2,14 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+interface ResultItem {
+  [key: string]: string | number | boolean | object | null | undefined;
+  _itemIndex?: number;
+  _note?: string;
+}
+
 type ResultsState = {
-  data?: any[];
+  data?: ResultItem[];
   status?: string | null;
   runId?: string | null;
   error?: string;

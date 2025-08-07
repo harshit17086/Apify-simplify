@@ -21,7 +21,8 @@ export async function POST(req: NextRequest) {
     const actors = data.actors?.items || data.data || [];
     
     return NextResponse.json({ actors });
-  } catch (e) {
+  } catch (error) {
+    console.error("Error fetching actors:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 } 

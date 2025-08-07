@@ -49,7 +49,7 @@ export default function DashboardPage() {
           : data.actors?.items || [];
         setActors(actorsList);
       }
-    } catch (e) {
+    } catch {
       setError("Failed to fetch actors");
     }
 
