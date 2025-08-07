@@ -12,7 +12,7 @@ interface SchemaProperty {
   type: string;
   title?: string;
   description?: string;
-  default?: any;
+  default?: unknown;
   enum?: string[];
   format?: string;
 }
@@ -60,7 +60,7 @@ export default function Home() {
           setActors([]);
         }
       }
-    } catch (error) {
+    } catch  {
       setError("Network error");
     }
     setLoading(false);
@@ -112,7 +112,7 @@ export default function Home() {
         console.log("Initial input values:", defaults);
         setInputValues(defaults);
       }
-    } catch (error) {
+    } catch  {
       setError("Failed to fetch actor schema");
     }
     setSchemaLoading(false);
@@ -150,7 +150,7 @@ export default function Home() {
         try {
           const parsedStartUrls = JSON.parse(inputValues.startUrls);
           cleanInput.startUrls = parsedStartUrls;
-        } catch (error) {
+        } catch  {
           // If it's not valid JSON, treat it as a single URL
           if (inputValues.startUrls.startsWith("http")) {
             cleanInput.startUrls = [{ url: inputValues.startUrls }];
@@ -163,7 +163,7 @@ export default function Home() {
         try {
           const additionalData = JSON.parse(inputValues.additionalInput);
           Object.assign(cleanInput, additionalData);
-        } catch (error) {
+        } catch  {
           console.warn("Invalid JSON in additional input, skipping");
         }
       }
@@ -197,7 +197,7 @@ export default function Home() {
           `/result?results=${resultsParam}&status=${data.status}&runId=${data.runId}`
         );
       }
-    } catch (error) {
+    } catch  {
       setError("Failed to run actor");
     }
     setRunLoading(false);
