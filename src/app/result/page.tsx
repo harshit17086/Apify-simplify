@@ -1,6 +1,6 @@
 "use client";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 
 interface ResultItem {
   [key: string]: string | number | boolean | object | null | undefined;
@@ -17,7 +17,7 @@ type ResultsState = {
   totalResults?: number;
 } | null;
 
-export default function ResultPage() {
+function ResultPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [results, setResults] = useState<ResultsState>(null);
@@ -147,7 +147,8 @@ export default function ResultPage() {
                         <div key={key} className="field">
                           <div className="field-name">{key}:</div>
                           <div className="field-value">
-                            {typeof value === "string" && value.length > 1000 ? (
+                            {typeof value === "string" &&
+                            value.length > 1000 ? (
                               <details className="expandable-content">
                                 <summary>
                                   {value.substring(0, 200)}...
@@ -572,5 +573,22 @@ export default function ResultPage() {
         }
       `}</style>
     </div>
+  );
+}
+
+export default function ResultPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="result-container">
+          <div className="loading-state">
+            <div className="loading-spinner"></div>
+            <p>Loading Results...</p>
+          </div>
+        </div>
+      }
+    >
+      <ResultPageContent />
+    </Suspense>
   );
 }
