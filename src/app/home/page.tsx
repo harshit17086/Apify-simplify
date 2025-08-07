@@ -29,7 +29,9 @@ export default function Home() {
   const [actors, setActors] = useState<Actor[]>([]);
   const [selectedActor, setSelectedActor] = useState<Actor | null>(null);
   const [inputSchema, setInputSchema] = useState<InputSchema | null>(null);
-  const [inputValues, setInputValues] = useState<Record<string, any>>({});
+  const [inputValues, setInputValues] = useState<
+    Record<string, string | number | boolean | object>
+  >({});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [schemaLoading, setSchemaLoading] = useState(false);
@@ -60,7 +62,7 @@ export default function Home() {
           setActors([]);
         }
       }
-    } catch  {
+    } catch {
       setError("Network error");
     }
     setLoading(false);
@@ -86,7 +88,7 @@ export default function Home() {
         setInputSchema(data.schema);
 
         // Initialize input values with defaults
-        const defaults: Record<string, any> = {};
+        const defaults: Record<string, string | number | boolean | object> = {};
         if (
           data.schema?.properties &&
           Object.keys(data.schema.properties).length > 0
@@ -112,13 +114,16 @@ export default function Home() {
         console.log("Initial input values:", defaults);
         setInputValues(defaults);
       }
-    } catch  {
+    } catch {
       setError("Failed to fetch actor schema");
     }
     setSchemaLoading(false);
   };
 
-  const handleInputChange = (key: string, value: any) => {
+  const handleInputChange = (
+    key: string,
+    value: string | number | boolean | object
+  ) => {
     console.log("Input changed:", key, "->", value);
     setInputValues((prev) => ({
       ...prev,
@@ -130,7 +135,9 @@ export default function Home() {
     if (!selectedActor) return;
 
     // Prepare the input object
-    let finalInput = { ...inputValues };
+    let finalInput: Record<string, string | number | boolean | object> = {
+      ...inputValues,
+    };
 
     // Handle special case for actors without schema
     if (
@@ -138,7 +145,7 @@ export default function Home() {
       Object.keys(inputSchema.properties).length === 0
     ) {
       // Clean up the input for actors without schema
-      const cleanInput: Record<string, any> = {};
+      const cleanInput: Record<string, string | number | boolean | object> = {};
 
       // Add URL if provided
       if (inputValues.url) {
@@ -147,23 +154,31 @@ export default function Home() {
 
       // Add startUrls if provided and valid JSON
       if (inputValues.startUrls) {
+        const startUrlsStr =
+          typeof inputValues.startUrls === "string"
+            ? inputValues.startUrls
+            : String(inputValues.startUrls);
         try {
-          const parsedStartUrls = JSON.parse(inputValues.startUrls);
+          const parsedStartUrls = JSON.parse(startUrlsStr);
           cleanInput.startUrls = parsedStartUrls;
-        } catch  {
+        } catch {
           // If it's not valid JSON, treat it as a single URL
-          if (inputValues.startUrls.startsWith("http")) {
-            cleanInput.startUrls = [{ url: inputValues.startUrls }];
+          if (startUrlsStr.startsWith("http")) {
+            cleanInput.startUrls = [{ url: startUrlsStr }];
           }
         }
       }
 
       // Add additional input if provided and valid JSON
       if (inputValues.additionalInput) {
+        const additionalInputStr =
+          typeof inputValues.additionalInput === "string"
+            ? inputValues.additionalInput
+            : String(inputValues.additionalInput);
         try {
-          const additionalData = JSON.parse(inputValues.additionalInput);
+          const additionalData = JSON.parse(additionalInputStr);
           Object.assign(cleanInput, additionalData);
-        } catch  {
+        } catch {
           console.warn("Invalid JSON in additional input, skipping");
         }
       }
@@ -197,7 +212,7 @@ export default function Home() {
           `/result?results=${resultsParam}&status=${data.status}&runId=${data.runId}`
         );
       }
-    } catch  {
+    } catch {
       setError("Failed to run actor");
     }
     setRunLoading(false);
@@ -211,14 +226,18 @@ export default function Home() {
   };
 
   const renderInputField = (key: string, property: SchemaProperty) => {
-    const value = inputValues[key] || "";
+    const value = inputValues[key];
 
     switch (property.type) {
       case "string":
         if (property.enum) {
           return (
             <select
-              value={value}
+              value={
+                typeof value === "string" || typeof value === "number"
+                  ? value
+                  : ""
+              }
               onChange={(e) => handleInputChange(key, e.target.value)}
               className="input"
             >
@@ -234,7 +253,13 @@ export default function Home() {
         return (
           <input
             type={property.format === "uri" ? "url" : "text"}
-            value={value}
+            value={
+              typeof value === "string"
+                ? value
+                : value !== undefined
+                ? String(value)
+                : ""
+            }
             onChange={(e) => handleInputChange(key, e.target.value)}
             className="input"
             placeholder={
@@ -247,7 +272,7 @@ export default function Home() {
           <label className="checkbox-label">
             <input
               type="checkbox"
-              checked={value}
+              checked={typeof value === "boolean" ? value : false}
               onChange={(e) => handleInputChange(key, e.target.checked)}
             />
             {property.title || key}
@@ -258,7 +283,13 @@ export default function Home() {
         return (
           <input
             type="number"
-            value={value}
+            value={
+              typeof value === "number"
+                ? value
+                : value !== undefined
+                ? Number(value)
+                : 0
+            }
             onChange={(e) =>
               handleInputChange(
                 key,
@@ -274,7 +305,13 @@ export default function Home() {
       default:
         return (
           <textarea
-            value={typeof value === "string" ? value : JSON.stringify(value)}
+            value={
+              typeof value === "string"
+                ? value
+                : value !== undefined
+                ? JSON.stringify(value)
+                : ""
+            }
             onChange={(e) => handleInputChange(key, e.target.value)}
             className="input textarea"
             placeholder={
@@ -380,8 +417,8 @@ export default function Home() {
                 <>
                   <div className="no-schema-info">
                     <p>
-                      This actor doesn&apos;t have a defined input schema. Please
-                      provide the input parameters manually:
+                      This actor doesn&apos;t have a defined input schema.
+                      Please provide the input parameters manually:
                     </p>
                   </div>
                   <div className="manual-input-form">
@@ -393,7 +430,13 @@ export default function Home() {
                         </span>
                         <input
                           type="url"
-                          value={inputValues.url || ""}
+                          value={
+                            typeof inputValues.url === "string"
+                              ? inputValues.url
+                              : inputValues.url !== undefined
+                              ? String(inputValues.url)
+                              : ""
+                          }
                           onChange={(e) =>
                             handleInputChange("url", e.target.value)
                           }
@@ -410,7 +453,13 @@ export default function Home() {
                           is provided above)
                         </span>
                         <textarea
-                          value={inputValues.startUrls || ""}
+                          value={
+                            typeof inputValues.startUrls === "string"
+                              ? inputValues.startUrls
+                              : inputValues.startUrls !== undefined
+                              ? String(inputValues.startUrls)
+                              : ""
+                          }
                           onChange={(e) =>
                             handleInputChange("startUrls", e.target.value)
                           }
@@ -426,7 +475,13 @@ export default function Home() {
                           Any additional parameters as JSON object (optional)
                         </span>
                         <textarea
-                          value={inputValues.additionalInput || ""}
+                          value={
+                            typeof inputValues.additionalInput === "string"
+                              ? inputValues.additionalInput
+                              : inputValues.additionalInput !== undefined
+                              ? String(inputValues.additionalInput)
+                              : ""
+                          }
                           onChange={(e) =>
                             handleInputChange("additionalInput", e.target.value)
                           }
