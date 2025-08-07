@@ -52,7 +52,7 @@ export default function ResultPage() {
   }, [searchParams]);
 
   const handleBack = () => {
-    router.push("/home");
+    router.push("/dashboard");
   };
 
   const isHTML = (content: string): boolean => {
@@ -268,14 +268,35 @@ export default function ResultPage() {
         <style jsx>{`
           .app-bg {
             min-height: 100vh;
-            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+            background: #000;
+            color: #fff;
+            position: relative;
             padding: 2rem 1rem;
           }
+
+          .app-bg::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(
+              circle at 70% 30%,
+              rgba(34, 197, 94, 0.1) 0%,
+              rgba(0, 0, 0, 0.8) 50%
+            );
+            z-index: 1;
+          }
+
           .card {
-            background: #fff;
-            border-radius: 18px;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08),
-              0 1.5px 4px rgba(0, 0, 0, 0.04);
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             padding: 2rem;
             max-width: 800px;
             width: 100%;
@@ -292,21 +313,27 @@ export default function ResultPage() {
           }
           .title {
             font-size: 2rem;
-            font-weight: 700;
+            font-weight: 800;
             margin: 0;
+            background: linear-gradient(135deg, #fff, #a1a1aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
           }
           .back-button {
-            background: #6b7280;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 0.5rem 1rem;
+            background: rgba(107, 114, 128, 0.2);
+            color: #d1d5db;
+            border: 1px solid rgba(107, 114, 128, 0.3);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
             font-size: 0.9rem;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s ease;
+            font-weight: 500;
           }
           .back-button:hover {
-            background: #4b5563;
+            background: rgba(107, 114, 128, 0.3);
+            transform: translateY(-1px);
           }
           .status-info {
             display: flex;
@@ -315,44 +342,51 @@ export default function ResultPage() {
             flex-wrap: wrap;
           }
           .status {
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1rem;
             border-radius: 20px;
             font-weight: 600;
             font-size: 0.9rem;
+            backdrop-filter: blur(20px);
           }
           .status.succeeded {
-            background: #d1fae5;
-            color: #065f46;
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+            border: 1px solid rgba(34, 197, 94, 0.3);
           }
           .status.failed,
           .status.aborted,
           .status.timed-out {
-            background: #fee2e2;
-            color: #991b1b;
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
           }
           .status.running {
-            background: #fef3c7;
-            color: #92400e;
+            background: rgba(251, 191, 36, 0.2);
+            color: #fcd34d;
+            border: 1px solid rgba(251, 191, 36, 0.3);
           }
           .run-id {
-            color: #6b7280;
+            color: #a1a1aa;
             font-size: 0.9rem;
-            padding: 0.5rem 1rem;
-            background: #f3f4f6;
-            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-family: monospace;
           }
           .subtitle {
             font-size: 1.3rem;
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 1.5rem;
+            color: #fff;
           }
           .info-note {
-            background: #eff6ff;
-            border: 1px solid #dbeafe;
-            border-radius: 8px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
             padding: 1rem;
             margin-bottom: 1.5rem;
-            color: #1e40af;
+            color: #93c5fd;
             font-size: 0.9rem;
           }
           .results-container {
@@ -360,30 +394,38 @@ export default function ResultPage() {
             overflow-y: auto;
           }
           .result-item {
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
             overflow: hidden;
+            transition: all 0.3s ease;
+          }
+          .result-item:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
           }
           .item-header {
-            background: #f9fafb;
-            padding: 0.75rem 1rem;
-            font-weight: 600;
-            border-bottom: 1px solid #e5e7eb;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 1rem 1.5rem;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
           }
           .item-note {
             font-weight: 400;
-            color: #6b7280;
+            color: #a1a1aa;
             font-size: 0.9rem;
           }
           .result-content {
-            padding: 1rem;
-            background: #fff;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.01);
           }
           .field {
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #f3f4f6;
-            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 1rem;
           }
           .field:last-child {
             border-bottom: none;
@@ -391,49 +433,61 @@ export default function ResultPage() {
             padding-bottom: 0;
           }
           .field-name {
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: #d1d5db;
+            margin-bottom: 0.75rem;
             font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
           }
           .field-value {
             margin-left: 1rem;
           }
           .field-content {
             margin: 0;
-            padding: 0.5rem;
-            background: #f9fafb;
-            border-radius: 4px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
             font-size: 0.85rem;
-            line-height: 1.4;
+            line-height: 1.5;
             overflow-x: auto;
             white-space: pre-wrap;
             word-break: break-word;
             max-height: 300px;
             overflow-y: auto;
+            color: #e5e7eb;
+            font-family: "Courier New", monospace;
           }
           .expandable-content {
             margin: 0;
           }
           .expandable-content summary {
             cursor: pointer;
-            padding: 0.5rem;
-            background: #f3f4f6;
-            border-radius: 4px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
             font-size: 0.85rem;
             line-height: 1.4;
-            font-family: monospace;
+            font-family: "Courier New", monospace;
+            color: #e5e7eb;
+            transition: all 0.3s ease;
+          }
+          .expandable-content summary:hover {
+            background: rgba(255, 255, 255, 0.05);
           }
           .expand-hint {
-            color: #6b7280;
+            color: #a1a1aa;
             font-style: italic;
             font-size: 0.8rem;
           }
           .full-content {
             margin: 0.5rem 0 0 0;
-            padding: 0.5rem;
-            background: #f9fafb;
-            border-radius: 4px;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
             font-size: 0.85rem;
             line-height: 1.4;
             overflow-x: auto;
@@ -441,39 +495,49 @@ export default function ResultPage() {
             word-break: break-word;
             max-height: 400px;
             overflow-y: auto;
+            color: #e5e7eb;
+            font-family: "Courier New", monospace;
           }
           .no-results {
             text-align: center;
-            color: #6b7280;
+            color: #a1a1aa;
             padding: 3rem;
             font-size: 1.1rem;
           }
           .error {
-            color: #dc2626;
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            border-radius: 6px;
+            color: #fca5a5;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
             padding: 1rem;
             margin-bottom: 2rem;
           }
           .button {
-            background: #2563eb;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             color: #fff;
             border: none;
-            border-radius: 6px;
+            border-radius: 12px;
             padding: 0.75rem 1.5rem;
             font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s ease;
+          }
+          .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
           }
           .html-content-container {
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
             overflow: hidden;
+            background: rgba(255, 255, 255, 0.02);
           }
           .html-tabs {
             display: flex;
-            background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           }
           .tab-button {
             flex: 1;
@@ -482,22 +546,26 @@ export default function ResultPage() {
             background: transparent;
             cursor: pointer;
             font-size: 0.9rem;
-            transition: all 0.2s;
-            border-right: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a1a1aa;
+            font-weight: 500;
           }
           .tab-button:last-child {
             border-right: none;
           }
           .tab-button.active {
-            background: #fff;
-            font-weight: 600;
-            color: #2563eb;
+            background: rgba(59, 130, 246, 0.2);
+            font-weight: 700;
+            color: #93c5fd;
+            border-color: rgba(59, 130, 246, 0.3);
           }
           .tab-button:hover:not(.active) {
-            background: #f3f4f6;
+            background: rgba(255, 255, 255, 0.05);
+            color: #d1d5db;
           }
           .tab-content {
-            background: #fff;
+            background: rgba(255, 255, 255, 0.01);
           }
           .html-preview {
             position: relative;
@@ -508,6 +576,7 @@ export default function ResultPage() {
             height: 100%;
             border: none;
             background: #fff;
+            border-radius: 0 0 12px 12px;
           }
           .formatted-html {
             max-height: 400px;
@@ -518,10 +587,11 @@ export default function ResultPage() {
             padding: 1rem;
             font-size: 0.8rem;
             line-height: 1.4;
-            background: #f8f9fa;
-            color: #374151;
+            background: rgba(255, 255, 255, 0.02);
+            color: #e5e7eb;
             white-space: pre;
             overflow-x: auto;
+            font-family: "Courier New", monospace;
           }
         `}</style>
       </div>
